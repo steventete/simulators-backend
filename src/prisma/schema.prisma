@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id       Int       @id @default(autoincrement())
+  nombre   String    @unique(map: "nombre") @db.VarChar(50)
+  usuarios Usuario[]
+
+  @@map("roles")
+}
+
+model Usuario {
+  cedula       Int          @id
+  nombre       String       @db.VarChar(100)
+  apellido     String       @db.VarChar(100)
+  email        String       @unique(map: "email") @db.VarChar(255)
+  clave        String       @db.VarChar(255)
+  rol_id       Int
+  creado_en    DateTime?    @default(now()) @db.Timestamp(0)
+  evaluaciones Evaluacion[]
+  proyectos    Proyecto[]
+  simulaciones Simulacion[]
+  rol          Role         @relation(fields: [rol_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_ibfk_1")
+
+  @@index([rol_id], map: "rol_id")
+  @@map("usuarios")
+}
+
+model TipoSimulador {
+  id          Int         @id @default(autoincrement())
+  nombre      String      @unique(map: "nombre") @db.VarChar(50)
+  simuladores Simulador[]
+
+  @@map("tipos_simuladores")
+}
+
+model Simulador {
+  id           Int           @id @default(autoincrement())
+  nombre       String        @unique(map: "nombre") @db.VarChar(100)
+  tipo_id      Int
+  descripcion  String?       @db.Text
+  simulaciones Simulacion[]
+  tipo         TipoSimulador @relation(fields: [tipo_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "simuladores_ibfk_1")
+
+  @@index([tipo_id], map: "tipo_id")
+  @@map("simuladores")
+}
+
+model Proyecto {
+  id           Int          @id @default(autoincrement())
+  nombre       String       @db.VarChar(150)
+  descripcion  String?      @db.Text
+  creador_id   Int
+  creado_en    DateTime?    @default(now()) @db.Timestamp(0)
+  evaluaciones Evaluacion[]
+  creador      Usuario      @relation(fields: [creador_id], references: [cedula], onDelete: NoAction, onUpdate: NoAction, map: "proyectos_ibfk_1")
+
+  @@index([creador_id], map: "creador_id")
+  @@map("proyectos")
+}
+
+model Simulacion {
+  id           Int          @id @default(autoincrement())
+  usuario_id   Int
+  simulador_id Int
+  parametros   Json
+  resultado    Json
+  creado_en    DateTime?    @default(now()) @db.Timestamp(0)
+  evaluaciones Evaluacion[]
+  usuario      Usuario      @relation(fields: [usuario_id], references: [cedula], onDelete: NoAction, onUpdate: NoAction, map: "simulaciones_ibfk_1")
+  simulador    Simulador    @relation(fields: [simulador_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "simulaciones_ibfk_2")
+
+  @@index([simulador_id], map: "simulador_id")
+  @@index([usuario_id], map: "usuario_id")
+  @@map("simulaciones")
+}
+
+model Evaluacion {
+  id            Int         @id @default(autoincrement())
+  usuario_id    Int
+  proyecto_id   Int
+  simulacion_id Int?
+  resultado     Json
+  creado_en     DateTime?   @default(now()) @db.Timestamp(0)
+  usuario       Usuario     @relation(fields: [usuario_id], references: [cedula], onDelete: NoAction, onUpdate: NoAction, map: "evaluaciones_ibfk_1")
+  proyecto      Proyecto    @relation(fields: [proyecto_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "evaluaciones_ibfk_2")
+  simulacion    Simulacion? @relation(fields: [simulacion_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "evaluaciones_ibfk_3")
+
+  @@index([proyecto_id], map: "proyecto_id")
+  @@index([simulacion_id], map: "simulacion_id")
+  @@index([usuario_id], map: "usuario_id")
+  @@map("evaluaciones")
+}

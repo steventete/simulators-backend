@@ -14,6 +14,25 @@ export const getProyectos = async (req: Request, res: Response) => {
   }
 };
 
+export const getProyectoById = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const proyecto = await prisma.proyecto.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        creador: { select: { nombre: true, email: true } },
+      },
+    });
+    if (!proyecto) {
+      return res.status(404).json({ error: "Proyecto no encontrado" });
+    }
+    res.json(proyecto);
+  } catch (error) {
+    res.status(500).json({ error: "Error al obtener el proyecto" });
+  }
+};
+
 export const createProyecto = async (req: Request, res: Response) => {
   const { nombre, descripcion, creador_id } = req.body;
 

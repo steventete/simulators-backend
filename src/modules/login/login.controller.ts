@@ -10,6 +10,7 @@ export const login = async (req: Request, res: Response) => {
 
   try {
     const usuario = await prisma.usuario.findUnique({ where: { email } });
+    const cedula = usuario?.cedula;
 
     if (!usuario) {
       return res.status(404).json({ error: "Usuario no encontrado" });
@@ -27,7 +28,7 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: "1h" }
     );
 
-    res.json({ message: "Inicio de sesión exitoso", token });
+    res.json({ message: "Inicio de sesión exitoso", token, cedula: cedula });
   } catch (error) {
     res.status(500).json({ error: "Error al iniciar sesión" });
   }

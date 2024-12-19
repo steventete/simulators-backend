@@ -21,6 +21,27 @@ export const getEvaluacionById = async (id: number) => {
   });
 };
 
+export const getEvaluacionesByProyectoId = async (proyecto_id: number) => {
+  return await prisma.evaluacion.findMany({
+    where: { proyecto_id },
+    include: {
+      usuario: {
+        select: {
+          cedula: true,
+          nombre: true,
+          apellido: true,
+          email: true,
+          rol_id: false,
+          creado_en: false,
+          clave: false,
+        },
+      },
+      proyecto: true,
+      simulacion: true,
+    },
+  });
+};
+
 export const createEvaluacion = async (data: any) => {
   return await prisma.evaluacion.create({
     data,

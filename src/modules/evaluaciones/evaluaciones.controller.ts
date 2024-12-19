@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import * as evaluacionService from "./evaluaciones.service";
 
 export const getEvaluaciones = async (req: Request, res: Response) => {
@@ -14,7 +14,7 @@ export const getEvaluaciones = async (req: Request, res: Response) => {
   }
 };
 
-export const getEvaluacion = async (req: Request, res: Response) => {
+export const getEvaluacion = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
   const { id } = req.params;
   try {
     const evaluacion = await evaluacionService.getEvaluacionById(parseInt(id));
@@ -45,6 +45,20 @@ export const createEvaluacion = async (req: Request, res: Response) => {
     }
   }
 };
+
+export const getEvaluacionesByProyectoId = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const evaluaciones = await evaluacionService.getEvaluacionesByProyectoId(parseInt(id));
+    res.json(evaluaciones);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      res.status(500).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: "Error desconocido" });
+    }
+  }
+}
 
 export const updateEvaluacion = async (req: Request, res: Response) => {
   const { id } = req.params;
